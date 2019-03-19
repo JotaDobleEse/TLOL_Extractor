@@ -136,7 +136,7 @@ namespace TLOL_Extractor
             string path = Path.Replace(".arr", ".text"),
                 dataPath = Path.Replace(".arr", ".data");
 
-            using (BinaryWriter writer = new BinaryWriter(File.Create(path), Encoding.Default))
+            using (BinaryWriter writer = new BinaryWriter(File.Create(path), EncodingExtension.GetUTF8WithoutBOM()))
             {
                 for (int i = 0; i < Texts.Count; i++)
                 {

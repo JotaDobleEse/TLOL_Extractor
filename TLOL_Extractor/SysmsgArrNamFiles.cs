@@ -101,16 +101,16 @@ namespace TLOL_Extractor
                 return null;
             }
 
-            using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open), Encoding.Default))
+            using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open), EncodingExtension.GetUTF8WithoutBOM()))
             {
                 char[] chars = reader.ReadChars((int)reader.BaseStream.Length);
-                string text = new string(chars).ReplaceSpanishChars();
+                string text = new string(chars);//.ReplaceSpanishChars();
                 var texts = text.Split(new string[] { "\n<end>\n\n" }, StringSplitOptions.None).Reverse()
                     .Skip(1).Reverse().ToArray();
 
                 ushort length = 0;
                 arrNamFile.Texts.Add(texts[0].ToCharArray().Concat(new char[] { '\0' }).ToArray());
-                length += (ushort)(texts[0].Length + 1);
+                length += (ushort)(texts[0].Length + texts[0].Count(c => c == 'ñ' || c == 'á' || c == 'é' || c == 'í' || c == 'ó' || c == 'ú' || c == 'Ñ' || c == 'Á' || c == 'É' || c == 'Í' || c == 'Ó' || c == 'Ú' || c == '¿' || c == '¡') + 1);
                 foreach (var txt in texts.Skip(1))
                 {
                     if (txt.Contains('<'))
@@ -131,7 +131,7 @@ namespace TLOL_Extractor
                         if (txt != texts.Last())
                             arrNamFile.Pointers.Add(length);
                         arrNamFile.Texts.Add(txt.ToCharArray().Concat(new char[] { '\0' }).ToArray());
-                        length += (ushort)(txt.Length + 1);
+                        length += (ushort)(txt.Length + txt.Count(c => c == 'ñ' || c == 'á' || c == 'é' || c == 'í' || c == 'ó' || c == 'ú' || c == 'Ñ' || c == 'Á' || c == 'É' || c == 'Í' || c == 'Ó' || c == 'Ú' || c == '¿' || c == '¡') + 1);
                     }
                 }
                 //var charArrays = texts.Select(s => s.ToCharArray().Concat(new char[] { '\0' }).ToArray())
@@ -155,7 +155,7 @@ namespace TLOL_Extractor
                 }
             }
 
-            using (BinaryWriter writer = new BinaryWriter(File.Create(namPath),Encoding.Default))
+            using (BinaryWriter writer = new BinaryWriter(File.Create(namPath),Encoding.UTF8))
             {
                 foreach (var text in Texts)
                 {

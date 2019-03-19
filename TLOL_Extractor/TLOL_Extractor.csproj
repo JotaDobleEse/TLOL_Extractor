@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArtsdataArrNamFiles.cs" />
+    <Compile Include="EncodingExtension.cs" />
     <Compile Include="EneMonsterArrNamFiles.cs" />
     <Compile Include="FormationInitArrNamFiles.cs" />
     <Compile Include="ItemlistArrNamFiles.cs" />

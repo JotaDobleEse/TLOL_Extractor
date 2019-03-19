@@ -151,6 +151,7 @@ namespace TLOL_Extractor
 
         public static MSGFile ReadRepackFiles(string dataPath, string textPath)
         {
+            Console.WriteLine($"Repack {textPath}> Checking .text and .data files...");
             if (!File.Exists(dataPath))
             {
                 Console.WriteLine("The file {0} not exists.", dataPath);
@@ -164,15 +165,20 @@ namespace TLOL_Extractor
 
             MSGFile msgFile = new MSGFile();
 
-            /************ READ TCTC ************/
+            /************ READ TCRC ************/
+            Console.WriteLine($"Repack {textPath}> Reading TCRC block...");
             BinaryReader reader = new BinaryReader(File.Open(dataPath, FileMode.Open));
             msgFile.HasTCRC = msgFile.ReadTCRC(reader);
 
             /************ READ TEXT ************/
+            Console.WriteLine($"Repack {textPath}> Reading TEXT block...");
             if (msgFile.HasTCRC)
             {
                 msgFile.TEXT = TEXTVALUE;
-                BinaryReader textReader = new BinaryReader(File.Open(textPath, FileMode.Open), Encoding.Default);
+                // JRH 2018-08-17
+                //BinaryReader textReader = new BinaryReader(File.Open(textPath, FileMode.Open), Encoding.Default);
+                BinaryReader textReader = new BinaryReader(File.Open(textPath, FileMode.Open), EncodingExtension.GetUTF8WithoutBOM());
+                // FIN JRH 
                 char[] chars = textReader.ReadChars((int)textReader.BaseStream.Length);
                 string text = new string(chars);
                 var texts = text.Split(new string[] { "\n<end>\n\n<end>\n\n" }, StringSplitOptions.None);
@@ -182,8 +188,14 @@ namespace TLOL_Extractor
                 msgFile.Texts = new Dictionary<int, char[]>();
                 CRC[] oldPointers = msgFile.CRCs.OrderBy(o => o.Key).Select(s => s.Value).ToArray();
                 msgFile.CRCs.Clear();
+                // JRH 2018-08-17
+                int newPointers = charArrays.Length - 1;
+                if (oldPointers.Length != newPointers)
+                    Console.WriteLine($"\tPointer's quanity has changed from {oldPointers.Length} to {newPointers}.");
+                msgFile.TCRC_BlockSize = newPointers * 8;
+                // FIN JRH 
                 int n = 0;
-                for (int i = 0; i < charArrays.Length-1; i++)
+                for (int i = 0; i < newPointers; i++)
                 {
                     var txt = charArrays[i];
                     int key = n + 16 + msgFile.TCRC_BlockSize;
@@ -193,7 +205,10 @@ namespace TLOL_Extractor
                             Checksum = oldPointers[i].Checksum,
                             Pointer = n
                         });
-                    n += txt.Length;
+                    // JRH 2018-08-17
+                    //n += txt.Length;
+                    n += txt.Length + txt.Count(c => c == 'ñ' || c == 'á' || c == 'é' || c == 'í' || c == 'ó' || c == 'ú' || c == 'Ñ' || c == 'Á' || c == 'É' || c == 'Í' || c == 'Ó' || c == 'Ú' || c == '¿' || c == '¡');
+                    // FIN JRH 
                 }
                 msgFile.TEXT_BlockSize = n;
                 textReader.Close();
@@ -201,9 +216,11 @@ namespace TLOL_Extractor
             }
 
             /************ READ NPCT ************/
+            Console.WriteLine($"Repack {textPath}> Reading NPCT block...");
             msgFile.HasNPCT = msgFile.ReadNPCT(reader);
 
             /************ READ NAME ************/
+            Console.WriteLine($"Repack {textPath}> Reading NAME block...");
             msgFile.HasNAME = msgFile.ReadNAME(reader);
             reader.Close();
 
@@ -214,8 +231,11 @@ namespace TLOL_Extractor
         public void Repack()
         {
             string path = this.Path;
-
-            BinaryWriter writer = new BinaryWriter(File.Create(path), Encoding.Default);
+            Console.WriteLine($"Repack {path}> Packing MSG file...");
+            // JRH 2018-08-17
+            //BinaryWriter writer = new BinaryWriter(File.Create(path), Encoding.Default);
+            BinaryWriter writer = new BinaryWriter(File.Create(path), Encoding.UTF8);
+            // FIN JRH 
             /************ SAVE TCRC ************/
             this.WriteTCRC(writer);
 

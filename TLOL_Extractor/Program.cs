@@ -11,10 +11,87 @@ namespace TLOL_Extractor
     {
         static void Main(string[] args)
         {
-            //MSGFile.ReadRepackFiles("_d01_gardn.data", "_d01_gardn.text").Repack();
-            //MapInfoArrNamFiles.ReadFiles("map_info.arr", "map_info.nam").Extract();
-            //MapInfoArrNamFiles.ReadDataTextFiles("_map_info.data", "_map_info.text").WriteArrNamFiles();
+            while (true)
+            {
+                ShowMenu();
+                try
+                {
+                    int option = ReadOption();
+                    switch (option)
+                    {
+                        case 0:
+                            return;
+                        case 1:
+                            UnpackMsgFile();
+                            break;
+                        case 2:
+                            RepackMsgFile();
+                            break;
+                        case 3:
+                            UnpackSysmsgArrNamFiles();
+                            break;
+                        case 4:
+                            RepackSysmsgArrNamFiles();
+                            break;
+                        case 5:
+                            UnpackItemlistArrNamFiles();
+                            break;
+                        case 6:
+                            RepackItemlistArrNamFiles();
+                            break;
+                        case 7:
+                            UnpackArtsdataArrNamFiles();
+                            break;
+                        case 8:
+                            RepackArtsdataArrNamFiles();
+                            break;
+                        case 9:
+                            UnpackEneMonsterArrNamFiles();
+                            break;
+                        case 10:
+                            RepackEneMonsterArrNamFiles();
+                            break;
+                        case 11:
+                            UnpackFormationInitArrNamFiles();
+                            break;
+                        case 12:
+                            RepackFormationInitArrNamFiles();
+                            break;
+                        case 13:
+                            UnpackMapPosArrNamFiles();
+                            break;
+                        case 14:
+                            RepackMapPosArrNamFiles();
+                            break;
+                        case 15:
+                            UnpackMapInfoArrNamFiles();
+                            break;
+                        case 16:
+                            RepackMapInfoArrNamFiles();
+                            break;
+                        case 17:
+                            UnpackAllMsgFiles();
+                            break;
+                        case 18:
+                            RepackAllMsgFiles();
+                            break;
+                        default:
+                            Console.WriteLine("Invalid option");
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error ocurred: {e.Message}");
+                }
+                Console.Write("Press enter to continue...");
+                Console.ReadLine();
+            }
+        }
 
+        private static void ShowMenu()
+        {
+            Console.Clear();
             Console.WriteLine("--------------------------------------------");
             Console.WriteLine("----------- THE LEGEND OF LEGACY -----------");
             Console.WriteLine("-----------     TEXT EDITOR      -----------");
@@ -37,73 +114,22 @@ namespace TLOL_Extractor
             Console.WriteLine("15 - Unpack .arr .nam files (map_info)");
             Console.WriteLine("16 - Repack .arr .nam files (map_info)");
             Console.WriteLine("17 - Unpack all .msg files (execute into xls directory or subdirectories)");
+            Console.WriteLine("18 - Repack all .msg files (execute into xls directory or subdirectories)");
+            Console.WriteLine("0 - Exit");
             Console.WriteLine();
             Console.Write("Option: ");
+        }
+
+        private static int ReadOption()
+        {
             try
             {
-                int option = int.Parse(Console.ReadLine());
-                switch(option)
-                {
-                    case 1:
-                        UnpackMsgFile();
-                        break;
-                    case 2:
-                        RepackMsgFile();
-                        break;
-                    case 3:
-                        UnpackSysmsgArrNamFiles();
-                        break;
-                    case 4:
-                        RepackSysmsgArrNamFiles();
-                        break;
-                    case 5:
-                        UnpackItemlistArrNamFiles();
-                        break;
-                    case 6:
-                        RepackItemlistArrNamFiles();
-                        break;
-                    case 7:
-                        UnpackArtsdataArrNamFiles();
-                        break;
-                    case 8:
-                        RepackArtsdataArrNamFiles();
-                        break;
-                    case 9:
-                        UnpackEneMonsterArrNamFiles();
-                        break;
-                    case 10:
-                        RepackEneMonsterArrNamFiles();
-                        break;
-                    case 11:
-                        UnpackFormationInitArrNamFiles();
-                        break;
-                    case 12:
-                        RepackFormationInitArrNamFiles();
-                        break;
-                    case 13:
-                        UnpackMapPosArrNamFiles();
-                        break;
-                    case 14:
-                        RepackMapPosArrNamFiles();
-                        break;
-                    case 15:
-                        UnpackMapInfoArrNamFiles();
-                        break;
-                    case 16:
-                        RepackMapInfoArrNamFiles();
-                        break;
-                    case 17:
-                        UnpackAllMsgFiles();
-                        break;
-                }
-            } 
+                return int.Parse(Console.ReadLine());
+            }
             catch (Exception)
             {
-                Console.WriteLine("Invalid option");
+                return -1;
             }
-            Console.Write("Press enter to continue...");
-            Console.ReadLine();
-
         }
 
         private static void RepackMapInfoArrNamFiles()
@@ -302,6 +328,28 @@ namespace TLOL_Extractor
             {
                 MSGFile.ReadMSGFile(file).Unpack();
                 Console.WriteLine("{0} file unpacked", file);
+            }
+        }
+
+        private static void RepackAllMsgFiles()
+        {
+            Console.Clear();
+            var files = Directory.EnumerateFiles(".", "*.text", SearchOption.AllDirectories);
+            foreach (var file in files)
+            {
+                string textPath = file,
+                dataPath = file.Replace(".text",".data");
+                Console.WriteLine($"[{textPath}]");
+                try
+                {
+                    MSGFile.ReadRepackFiles(dataPath, textPath).Repack();
+                    Console.WriteLine("{0} file repacked!", textPath);
+                } 
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error ocurred in file {textPath}: {e.Message}");
+                }
+                Console.WriteLine("");
             }
         }
     }
